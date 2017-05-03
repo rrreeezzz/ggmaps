@@ -1,5 +1,10 @@
+//adresse de Bourges, INSA CVL
 var origin = {lat: 47.081909, lng: 2.415426}
-var map;
+var infowindowMarker;
+var infowindowOther;
+//deux infowindow pour nos markers et pour les autres places
+
+var map = null;
 var panel;
 var initialize;
 var calculate;
@@ -11,14 +16,14 @@ function initAutocomplete() {
     zoom: 15,
     mapTypeId: 'roadmap'
   });
-  
+
   direction = new google.maps.DirectionsRenderer({
-    map   : map, 
-    panel : panel 
+    map   : map,
+    panel : panel
   });
 
 
-  // Create the search box and link it to the UI element.
+  // On crée la searchbox
   var input = document.getElementById('interestPoint');
   var input1 = document.getElementById('origin');
   var input2 = document.getElementById('destination');
@@ -26,35 +31,35 @@ function initAutocomplete() {
   var searchBox = new google.maps.places.SearchBox(input1);
   var searchBox = new google.maps.places.SearchBox(input2);
 
-  // Bias the SearchBox results towards current map's viewport.
+  // On assigne les bords de la map a la searchbox
   map.addListener('bounds_changed', function() {
     searchBox.setBounds(map.getBounds());
   });
 
-  var markers = [];
-  // Listen for the event fired when the user selects a prediction and retrieve
-  // more details for that place.
-  infowindow = new google.maps.InfoWindow;
+  var markers = []; //tableau de marker
+  var i=0; //pour compter les markers
+  infowindowMarker = new google.maps.InfoWindow(); //pour avoir une infowindow quand on click sur un marker
+  var infowindowContent = document.getElementById('infowindow-content'); //contenu de l'infowindow qui change à chaque fois
 
+  // Ecoute les évènements quand un utilisateurs choisi une prédiction
   searchBox.addListener('places_changed', function() {
     var places = searchBox.getPlaces();
-
     if (places.length == 0) {
       return;
     }
 
-    // Clear out the old markers.
+    // On enlève les anciens markers
     markers.forEach(function(marker) {
       marker.setMap(null);
     });
     markers = [];
     i=0;
 
-    // For each place, get the icon, name and location.
+    // Pour chaque place on a les icons, etc...
     var bounds = new google.maps.LatLngBounds();
     places.forEach(function(place) {
       if (!place.geometry) {
-        console.log("Returned place contains no geometry");
+        console.log("Pas de geometry pour cette place");
         return;
       }
       var icon = {
@@ -64,7 +69,7 @@ function initAutocomplete() {
         scaledSize: new google.maps.Size(25, 25)
       };
 
-      // Create a marker for each place.
+      //Crée un marker pour chaque place
       markers.push(new google.maps.Marker({
         map: map,
         icon: icon,
@@ -72,18 +77,20 @@ function initAutocomplete() {
         position: place.geometry.location
       }));
 
+      //On rempli l'infowindow pour chaque marker, et on lui ajoute le listener pour l'event 'click'
       var marker = markers[i];
       marker.addListener('click', function () {
-        infowindowContent = document.getElementById('infowindow-content');
         infowindowContent.children['place-icon'].src = place.icon;
         infowindowContent.children['place-name'].textContent = place.name;
         infowindowContent.children['place-address'].textContent = place.formatted_address;
-        infowindow.setContent(infowindowContent);
-        infowindow.open(map, this);
+        infowindowMarker.setContent(infowindowContent);
+        if (infowindowOther) {
+          infowindowOther.close();
+        }
+        infowindowMarker.open(map, this);
       });
 
       if (place.geometry.viewport) {
-        // Only geocodes have viewport.
         bounds.union(place.geometry.viewport);
       } else {
         bounds.extend(place.geometry.location);
@@ -106,22 +113,18 @@ var ClickEventHandler = function(map, origin) {
   this.directionsDisplay = new google.maps.DirectionsRenderer;
   this.directionsDisplay.setMap(map);
   this.placesService = new google.maps.places.PlacesService(map);
-  this.infowindow = new google.maps.InfoWindow;
+  infowindowOther = new google.maps.InfoWindow;
   this.infowindowContent = document.getElementById('infowindow-content');
-  this.infowindow.setContent(this.infowindowContent);
+  infowindowOther.setContent(this.infowindowContent);
 
-  // Listen for clicks on the map.
+  //Ecoute pour les clicks sur la map
   this.map.addListener('click', this.handleClick.bind(this));
 };
 
 ClickEventHandler.prototype.handleClick = function(event) {
-  console.log('You clicked on: ' + event.latLng);
-  // If the event has a placeId, use it.
+  // Si l'event a un placeId, on affiche une infowindow
   if (event.placeId) {
-    console.log('You clicked on place:' + event.placeId);
 
-    // Calling e.stop() on the event prevents the default info prevent some
-    // other map click event handlers from receiving the event.
     event.stop();
     this.getPlaceInformation(event.placeId);
   }
@@ -132,12 +135,15 @@ ClickEventHandler.prototype.getPlaceInformation = function(placeId) {
   var me = this;
   this.placesService.getDetails({placeId: placeId}, function(place, status) {
     if (status === 'OK') {
-      me.infowindow.close();
-      me.infowindow.setPosition(place.geometry.location);
+      if (infowindowMarker) {
+        infowindowMarker.close();
+      }
+      infowindowOther.close();
+      infowindowOther.setPosition(place.geometry.location);
       me.infowindowContent.children['place-icon'].src = place.icon;
       me.infowindowContent.children['place-name'].textContent = place.name;
       me.infowindowContent.children['place-address'].textContent = place.formatted_address;
-      me.infowindow.open(me.map);
+      infowindowOther.open(me.map);
     }
   });
 };

@@ -23,8 +23,8 @@ function initAutocomplete() {
   var input1 = document.getElementById('origin');
   var input2 = document.getElementById('destination');
   var searchBox = new google.maps.places.SearchBox(input);
+  var searchBox = new google.maps.places.SearchBox(input1);
   var searchBox = new google.maps.places.SearchBox(input2);
-  var searchBox = new google.maps.places.SearchBox(input3);
 
   // Bias the SearchBox results towards current map's viewport.
   map.addListener('bounds_changed', function() {

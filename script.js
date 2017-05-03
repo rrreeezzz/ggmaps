@@ -28,8 +28,8 @@ function initAutocomplete() {
   var input1 = document.getElementById('origin');
   var input2 = document.getElementById('destination');
   var searchBox = new google.maps.places.SearchBox(input);
-  var searchBox = new google.maps.places.SearchBox(input1);
-  var searchBox = new google.maps.places.SearchBox(input2);
+  var searchBox1 = new google.maps.places.SearchBox(input1);
+  var searchBox2 = new google.maps.places.SearchBox(input2);
 
   // On assigne les bords de la map a la searchbox
   map.addListener('bounds_changed', function() {

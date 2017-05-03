@@ -4,16 +4,32 @@ var infowindowMarker;
 var infowindowOther;
 //deux infowindow pour nos markers et pour les autres places
 
+var map = null;
+var panel;
+var initialize;
+var calculate;
+var direction;
+
 function initAutocomplete() {
-  var map = new google.maps.Map(document.getElementById('map-canvas'), {
+    map = new google.maps.Map(document.getElementById('map-canvas'), {
     center: origin,
     zoom: 15,
     mapTypeId: 'roadmap'
   });
 
+  direction = new google.maps.DirectionsRenderer({
+    map   : map,
+    panel : panel
+  });
+
+
   // On crée la searchbox
   var input = document.getElementById('interestPoint');
+  var input1 = document.getElementById('origin');
+  var input2 = document.getElementById('destination');
   var searchBox = new google.maps.places.SearchBox(input);
+  var searchBox = new google.maps.places.SearchBox(input2);
+  var searchBox = new google.maps.places.SearchBox(input3);
 
   // On assigne les bords de la map a la searchbox
   map.addListener('bounds_changed', function() {
@@ -130,4 +146,23 @@ ClickEventHandler.prototype.getPlaceInformation = function(placeId) {
       infowindowOther.open(me.map);
     }
   });
+};
+
+
+function calculate(){
+    origin      = document.getElementById('origin').value; // Le point départ
+    destination = document.getElementById('destination').value; // Le point d'arrivé
+    if(origin && destination){
+        var request = {
+            origin      : origin,
+            destination : destination,
+            travelMode  : google.maps.DirectionsTravelMode.DRIVING // Type de transport
+        }
+        var directionsService = new google.maps.DirectionsService(); // Service de calcul d'itinéraire
+        directionsService.route(request, function(response, status){ // Envoie de la requête pour calculer le parcours
+            if(status == google.maps.DirectionsStatus.OK){
+                direction.setDirections(response); // Trace l'itinéraire sur la carte et les différentes étapes du parcours
+            }
+        });
+    } //http://code.google.com/intl/fr-FR/apis/maps/documentation/javascript/reference.html#DirectionsRequest
 };

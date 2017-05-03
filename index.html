@@ -47,9 +47,18 @@
             </div>
           </div>
         </form>
+        <div id="destinationForm">
+        <form action="" method="get" name="direction" id="direction">
+                 <label>Point de départ :</label>
+                <input type="text" name="origin" placeholder="Lyon..."  id="origin">
+                <label>Destination :</label>
+                <input type="text" name="destination" placeholder="Paris..."  id="destination">
+                <input type="button" value="Calculer l'itinéraire" onclick="javascript:calculate()">
+        </form>
+
+        </div>
+        <div id="panel"></div>
       </div>
-
-
       <div class="col-md-6 map nopadding">
         <div class="google-map-canvas" id="map-canvas"></div>
         <div id="infowindow-content">
